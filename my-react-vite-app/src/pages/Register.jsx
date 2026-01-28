@@ -8,8 +8,9 @@ const Register = () => {
   const [formData, setFormData] = useState({
     email: '',
     password: '',
-    firstName: '',
-    lastName: '',
+    fullName: '',
+    studentNumber: '',
+    department: '',
     role: 'student'
   });
   const [error, setError] = useState('');
@@ -28,8 +29,9 @@ const Register = () => {
       const registrationData = {
         email: formData.email,
         password: formData.password,
-        first_name: formData.firstName,
-        last_name: formData.lastName,
+        full_name: formData.fullName,
+        student_number: formData.studentNumber || null,
+        department: formData.department || null,
         role: formData.role || 'student',
       };
 
@@ -87,30 +89,16 @@ const Register = () => {
           {error && <div className="error-message">{error}</div>}
           
           <form onSubmit={handleSubmit} className="auth-form">
-            <div className="form-row">
-              <div className="form-group">
-                <label>First Name</label>
-                <input
-                  type="text"
-                  value={formData.firstName}
-                  onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
-                  required
-                  aria-label="First name"
-                  placeholder="First name"
-                />
-              </div>
-              
-              <div className="form-group">
-                <label>Last Name</label>
-                <input
-                  type="text"
-                  value={formData.lastName}
-                  onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
-                  required
-                  aria-label="Last name"
-                  placeholder="Last name"
-                />
-              </div>
+            <div className="form-group">
+              <label>Full Name</label>
+              <input
+                type="text"
+                value={formData.fullName}
+                onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
+                required
+                aria-label="Full name"
+                placeholder="Enter your full name"
+              />
             </div>
             
             <div className="form-group">
@@ -149,6 +137,30 @@ const Register = () => {
                 <option value="advisor">Advisor</option>
                 <option value="admin">Administrator</option>
               </select>
+            </div>
+
+            {formData.role === 'student' && (
+              <div className="form-group">
+                <label>Student Number (Optional)</label>
+                <input
+                  type="text"
+                  value={formData.studentNumber}
+                  onChange={(e) => setFormData({ ...formData, studentNumber: e.target.value })}
+                  aria-label="Student number"
+                  placeholder="Enter your student number"
+                />
+              </div>
+            )}
+
+            <div className="form-group">
+              <label>Department (Optional)</label>
+              <input
+                type="text"
+                value={formData.department}
+                onChange={(e) => setFormData({ ...formData, department: e.target.value })}
+                aria-label="Department"
+                placeholder="Enter your department"
+              />
             </div>
             
             <button type="submit" disabled={loading} className="btn-primary btn-auth">

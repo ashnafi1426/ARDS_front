@@ -106,13 +106,13 @@ const StudentResourcesPage = () => {
 
     return (
         <PageLayout title="Resources">
-            <div className="p-4 lg:p-10 space-y-10 bg-[#1e1b4b]">
+            <div className="p-4 lg:p-10 space-y-10 bg-white">
             <div className="max-w-6xl mx-auto space-y-10">
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 relative">
                     <div className="absolute -left-10 bottom-0 w-1.5 h-full bg-blue-500 rounded-full shadow-[0_0_20px_#3b82f6] opacity-50" />
                     <div>
-                        <h1 className="text-5xl font-black text-white tracking-tighter uppercase mb-2">Knowledge Registry</h1>
-                        <p className="text-slate-500 text-sm font-bold uppercase tracking-[0.4em] opacity-80">Institutional Resources & Investigative Assets</p>
+                        <h1 className="text-5xl font-black text-black tracking-tighter uppercase mb-2">Knowledge Registry</h1>
+                        <p className="text-gray-600 text-sm font-bold uppercase tracking-[0.4em] opacity-80">Institutional Resources & Investigative Assets</p>
                     </div>
                     <button
                         onClick={() => setShowAddForm(!showAddForm)}

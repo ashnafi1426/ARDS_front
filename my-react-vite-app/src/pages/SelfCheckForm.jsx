@@ -194,8 +194,8 @@ const SelfCheckForm = () => {
         {/* Intelligence Header */}
         <div className="relative">
           <div className="absolute -left-10 bottom-0 w-1.5 h-full bg-blue-500 rounded-full shadow-[0_0_20px_#3b82f6] opacity-50" />
-          <h1 className="text-7xl font-[900] text-white tracking-tighter uppercase mb-2">Weekly Assessment</h1>
-          <p className="text-blue-300 text-lg font-[900] uppercase tracking-[0.4em] opacity-80">Phase {formData.weekNumber} Performance Telemetry Submission</p>
+          <h1 className="text-7xl font-[900] text-black tracking-tighter uppercase mb-2">Weekly Assessment</h1>
+          <p className="text-blue-600 text-lg font-[900] uppercase tracking-[0.4em] opacity-80">Phase {formData.weekNumber} Performance Telemetry Submission</p>
         </div>
 
         {backendStatus === 'disconnected' && (

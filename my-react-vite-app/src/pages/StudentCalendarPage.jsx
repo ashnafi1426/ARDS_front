@@ -82,51 +82,51 @@ const StudentCalendarPage = () => {
 
     return (
         <PageLayout title="Calendar">
-            <div className="p-4 lg:p-10 space-y-10 bg-[#1e1b4b]">
+            <div className="p-4 lg:p-10 space-y-10 bg-white">
             <div className="max-w-4xl mx-auto space-y-10">
                 <div className="flex flex-col md:flex-row justify-between items-center gap-6 relative">
-                    <div className="absolute -left-10 bottom-0 w-1.5 h-full bg-teal-500 rounded-full shadow-[0_0_20px_#14b8a6] opacity-50" />
+                    <div className="absolute -left-10 bottom-0 w-1.5 h-full bg-blue-500 rounded-full shadow-[0_0_20px_#3b82f6] opacity-50" />
                     <div>
-                        <h1 className="text-5xl font-black text-white tracking-tighter uppercase mb-2">Temporal Grid</h1>
-                        <p className="text-slate-500 text-sm font-bold uppercase tracking-[0.4em] opacity-80">Cycle Schedule & Deployment Matrix</p>
+                        <h1 className="text-5xl font-black text-black tracking-tighter uppercase mb-2">Temporal Grid</h1>
+                        <p className="text-gray-600 text-sm font-bold uppercase tracking-[0.4em] opacity-80">Cycle Schedule & Deployment Matrix</p>
                     </div>
                     <button
                         onClick={() => setShowAddEventModal(true)}
-                        className="px-8 py-4 bg-teal-600 hover:bg-teal-500 text-white rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] transition-all shadow-2xl border border-teal-400/30 active:scale-95 flex items-center gap-3"
+                        className="px-8 py-4 bg-blue-600 hover:bg-blue-500 text-white rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] transition-all shadow-2xl border border-blue-400/30 active:scale-95 flex items-center gap-3"
                     >
                         <span>+</span> Authorize Entry
                     </button>
                 </div>
 
-                <div className="bg-slate-900/40 backdrop-blur-3xl rounded-[48px] p-8 border border-white/5 shadow-3xl overflow-hidden">
-                    <div className="divide-y divide-white/5">
+                <div className="bg-gray-50 backdrop-blur-3xl rounded-[48px] p-8 border border-gray-300 shadow-3xl overflow-hidden">
+                    <div className="divide-y divide-gray-300">
                         {calendarEvents.length > 0 ? (
                             calendarEvents.map((ev, i) => (
-                                <div key={i} className="p-8 hover:bg-white/[0.02] transition-all flex items-start gap-8 group">
-                                    <div className={`w-16 h-16 rounded-[24px] flex items-center justify-center text-3xl shadow-inner border border-white/5 transition-transform group-hover:rotate-6
-                                        ${ev.type === 'exam' ? 'bg-red-500/10 text-red-400' :
-                                            ev.type === 'assignment' ? 'bg-indigo-500/10 text-indigo-400' :
-                                                'bg-teal-500/10 text-teal-400'}`}>
+                                <div key={i} className="p-8 hover:bg-gray-100 transition-all flex items-start gap-8 group">
+                                    <div className={`w-16 h-16 rounded-[24px] flex items-center justify-center text-3xl shadow-inner border border-gray-300 transition-transform group-hover:rotate-6
+                                        ${ev.type === 'exam' ? 'bg-red-50 text-red-600' :
+                                            ev.type === 'assignment' ? 'bg-indigo-50 text-indigo-600' :
+                                                'bg-blue-50 text-blue-600'}`}>
                                         {ev.icon}
                                     </div>
                                     <div className="flex-1 min-w-0">
                                         <div className="flex justify-between items-start gap-4">
-                                            <h3 className="font-black text-xl text-white uppercase tracking-tighter group-hover:text-teal-400 transition-colors uppercase">{ev.title}</h3>
-                                            <span className="bg-slate-950 text-slate-400 px-4 py-1.5 rounded-xl text-[10px] font-black tracking-widest border border-white/5">
+                                            <h3 className="font-black text-xl text-black uppercase tracking-tighter group-hover:text-blue-600 transition-colors uppercase">{ev.title}</h3>
+                                            <span className="bg-white text-gray-700 px-4 py-1.5 rounded-xl text-[10px] font-black tracking-widest border border-gray-300">
                                                 {ev.time}
                                             </span>
                                         </div>
-                                        <div className="text-slate-500 font-bold text-xs uppercase tracking-widest mt-2 mb-4">
+                                        <div className="text-gray-600 font-bold text-xs uppercase tracking-widest mt-2 mb-4">
                                             {ev.date}
                                         </div>
-                                        <p className="text-slate-400 text-sm leading-relaxed italic opacity-80 group-hover:opacity-100 transition-opacity">
+                                        <p className="text-gray-700 text-sm leading-relaxed italic opacity-80 group-hover:opacity-100 transition-opacity">
                                             "{ev.description}"
                                         </p>
                                     </div>
                                 </div>
                             ))
                         ) : (
-                            <div className="p-24 text-center text-slate-600 font-black uppercase tracking-[0.3em]">
+                            <div className="p-24 text-center text-gray-600 font-black uppercase tracking-[0.3em]">
                                 No active intervals detected.
                             </div>
                         )}

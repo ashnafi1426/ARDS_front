@@ -111,12 +111,12 @@ const NotificationsPage = () => {
 
   return (
     <PageLayout title="Notifications">
-      <div className={`p-4 lg:p-10 space-y-10 bg-[#1e1b4b]`}>
+      <div className={`p-4 lg:p-10 space-y-10 bg-white`}>
       <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 relative">
         <div className="absolute -left-10 bottom-0 w-1.5 h-full bg-indigo-600 rounded-full shadow-[0_0_20px_#4f46e5] opacity-50" />
         <div>
-          <h1 className="text-5xl font-black tracking-tighter uppercase mb-2 text-white">Alert Registry</h1>
-          <p className="text-sm font-bold uppercase tracking-[0.4em] opacity-80 text-slate-500">System Communication Logs & Status Updates</p>
+          <h1 className="text-5xl font-black tracking-tighter uppercase mb-2 text-black">Alert Registry</h1>
+          <p className="text-sm font-bold uppercase tracking-[0.4em] opacity-80 text-gray-600">System Communication Logs & Status Updates</p>
         </div>
         <button
           onClick={markAllAsRead}
@@ -126,14 +126,14 @@ const NotificationsPage = () => {
         </button>
       </div>
 
-      <div className="backdrop-blur-3xl rounded-[40px] p-8 border shadow-3xl flex items-center gap-4 bg-slate-900/40 border-white/5">
+      <div className="backdrop-blur-3xl rounded-[40px] p-8 border shadow-3xl flex items-center gap-4 bg-gray-50 border-gray-300">
         {['all', 'unread', 'read'].map((t) => (
           <button
             key={t}
             onClick={() => setFilter(t)}
             className={`px-8 py-3 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] transition-all border ${filter === t
               ? 'bg-indigo-600 border-indigo-400 text-white shadow-2xl scale-105'
-              : 'bg-white/5 border-white/5 text-slate-500 hover:text-white'
+              : 'bg-white border-gray-300 text-black hover:bg-gray-100'
               }`}
           >
             {t} Nodes
@@ -143,10 +143,10 @@ const NotificationsPage = () => {
 
       <div className="space-y-6">
         {notifications.length === 0 ? (
-          <div className="rounded-[64px] p-24 border border-dashed text-center bg-white/[0.01] border-white/5">
+          <div className="rounded-[64px] p-24 border border-dashed text-center bg-gray-50 border-gray-300">
             <div className="text-6xl mb-6 opacity-30">📭</div>
-            <h3 className="text-2xl font-black uppercase tracking-tighter text-slate-700">Registry Empty</h3>
-            <p className="text-slate-500 text-xs font-black uppercase tracking-[0.3em] mt-2">Zero active communication logs found for this sector.</p>
+            <h3 className="text-2xl font-black uppercase tracking-tighter text-gray-700">Registry Empty</h3>
+            <p className="text-gray-600 text-xs font-black uppercase tracking-[0.3em] mt-2">Zero active communication logs found for this sector.</p>
           </div>
         ) : (
           notifications.map((notif) => {
@@ -156,25 +156,25 @@ const NotificationsPage = () => {
             return (
               <div
                 key={notif.id}
-                className="backdrop-blur-3xl rounded-[40px] p-8 border transition-all duration-500 group relative overflow-hidden bg-slate-900/40 border-white/5 hover:bg-slate-900 hover:border-indigo-500/30"
+                className="backdrop-blur-3xl rounded-[40px] p-8 border transition-all duration-500 group relative overflow-hidden bg-gray-50 border-gray-300 hover:bg-white hover:border-indigo-500/30"
               >
                 <div className="flex items-start gap-8 relative z-10">
-                  <div className="w-16 h-16 rounded-[24px] flex items-center justify-center shadow-lg border transition-transform duration-700 group-hover:rotate-6 bg-slate-950 border-white/5">
+                  <div className="w-16 h-16 rounded-[24px] flex items-center justify-center shadow-lg border transition-transform duration-700 group-hover:rotate-6 bg-white border-gray-300">
                     {getNotificationIcon(notif.type || notif.notification_type)}
                   </div>
 
                   <div className="flex-1 min-w-0">
                     <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-4">
-                      <h3 className="font-black text-xl tracking-tighter uppercase text-white group-hover:text-indigo-400">
+                      <h3 className="font-black text-xl tracking-tighter uppercase text-black group-hover:text-indigo-600">
                         {notif.title}
                         {!isRead && <span className="ml-4 px-3 py-1 bg-indigo-600 text-white rounded-full text-[8px] font-black tracking-[0.2em] shadow-lg animate-pulse">Unprocessed</span>}
                       </h3>
-                      <span className="text-[10px] font-black uppercase tracking-widest text-slate-600">
+                      <span className="text-[10px] font-black uppercase tracking-widest text-gray-600">
                         {new Date(notif.created_at || notif.createdAt).toLocaleString()}
                       </span>
                     </div>
 
-                    <p className="text-base leading-relaxed font-bold mb-8 text-slate-400 opacity-80 group-hover:text-slate-200">
+                    <p className="text-base leading-relaxed font-bold mb-8 text-gray-700 opacity-80 group-hover:text-black">
                       {notif.message}
                     </p>
 
@@ -189,7 +189,7 @@ const NotificationsPage = () => {
                       )}
                       <button
                         onClick={() => deleteNotification(notif.id)}
-                        className="h-10 px-6 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all border group-hover:bg-red-500/10 bg-white/5 border-white/5 text-red-400 hover:text-red-500 hover:border-red-500/30"
+                        className="h-10 px-6 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all border group-hover:bg-red-500/10 bg-white border-gray-300 text-red-600 hover:text-red-700 hover:border-red-500/30"
                       >
                         Purge Log
                       </button>
