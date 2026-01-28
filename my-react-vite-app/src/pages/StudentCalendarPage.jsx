@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import api from '../config/api';
 import LoadingSpinner from '../components/LoadingSpinner';
-import PageLayout from '../components/layouts/PageLayout';
+import DashboardLayout from '../components/layouts/DashboardLayout';
 
 const StudentCalendarPage = () => {
     const [calendarEvents, setCalendarEvents] = useState([]);
@@ -81,7 +81,7 @@ const StudentCalendarPage = () => {
     if (loading) return <LoadingSpinner />;
 
     return (
-        <PageLayout title="Calendar">
+        <DashboardLayout>
             <div className="p-4 lg:p-10 space-y-10 bg-white">
             <div className="max-w-4xl mx-auto space-y-10">
                 <div className="flex flex-col md:flex-row justify-between items-center gap-6 relative">
@@ -163,7 +163,7 @@ const StudentCalendarPage = () => {
                 </div>
             )}
             </div>
-        </PageLayout>
+        </DashboardLayout>
     );
 };
 

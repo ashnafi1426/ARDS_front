@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import PageLayout from '../components/layouts/PageLayout';
+import DashboardLayout from '../components/layouts/DashboardLayout';
 
 const StudentHelpPage = () => {
     const [openFaq, setOpenFaq] = useState(null);
@@ -31,7 +31,7 @@ const StudentHelpPage = () => {
     };
 
     return (
-        <PageLayout title="Help">
+        <DashboardLayout>
             <div className="p-4 lg:p-10 space-y-10 bg-white">
             <div className="max-w-6xl mx-auto space-y-12">
 
@@ -106,7 +106,7 @@ const StudentHelpPage = () => {
                 </div>
                 </div>
             </div>
-        </PageLayout>
+        </DashboardLayout>
     );
 };
 

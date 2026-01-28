@@ -1,10 +1,7 @@
-const LoadingSpinner = ({ message = 'Loading...' }) => {
-  return (
-    <div className="loading-spinner">
-      <div className="spinner"></div>
-      <p>{message}</p>
-    </div>
-  );
-};
+const LoadingSpinner = () => (
+  <div className="loading-spinner-container">
+    <div className="loading-spinner"></div>
+  </div>
+);
 
 export default LoadingSpinner;

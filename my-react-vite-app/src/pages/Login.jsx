@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { logIn } from '../services/login.service';
+import authService from '../services/auth.service';
 import LandingHeader from '../components/LandingHeader';
 import '../styles/Auth.css';
 
@@ -16,13 +16,18 @@ const Login = () => {
     setLoading(true);
     try {
       console.log('🔐 Attempting login with:', formData.email);
-      const response = await logIn({ email: formData.email, password: formData.password });
+      const response = await authService.login({ 
+        email: formData.email, 
+        password: formData.password 
+      });
+      
       if (!response || !response.user || !response.token) {
         console.error('❌ Login returned invalid response:', response);
         setError('Login failed. Invalid response from server.');
         setLoading(false);
         return;
       }
+      
       const { user, token } = response;
       
       if (!user || !user.role) {
@@ -32,23 +37,28 @@ const Login = () => {
         return;
       }
       
-      // Store user and token in localStorage
-      localStorage.setItem('user', JSON.stringify(user));
-      localStorage.setItem('token', token);
+      // Store user and token using auth service
+      authService.storeAuthData(user, token);
       
       console.log('✅ Login successful, user:', user);
       console.log('👤 User role:', user.role);
-      console.log('🚀 Redirecting to:', user.role === 'admin' ? '/admin/dashboard' : user.role === 'advisor' ? '/advisor/dashboard' : '/student/dashboard');
       
-      // Small delay to ensure state is updated
+      // Direct navigation based on role
+      const redirectPath = user.role === 'admin' 
+        ? '/admin/dashboard' 
+        : user.role === 'advisor' 
+        ? '/advisor/dashboard' 
+        : '/student/dashboard';
+      
+      console.log('🔄 Redirecting to:', redirectPath);
+      
+      // Small delay to ensure localStorage is written
       setTimeout(() => {
-        navigate('/redirect', { replace: true });
+        navigate(redirectPath, { replace: true });
       }, 100);
     } catch (err) {
       console.error('❌ Login error:', err);
-      const errorMessage =
-        err.message ||
-        'Login failed. Please check your credentials.';
+      const errorMessage = err.message || 'Login failed. Please check your credentials.';
       setError(errorMessage);
       setLoading(false);
     }

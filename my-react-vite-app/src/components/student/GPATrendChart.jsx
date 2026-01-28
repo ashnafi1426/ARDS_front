@@ -1,140 +1,191 @@
-import { useState, useEffect } from 'react';
-import PropTypes from 'prop-types';
-import LoadingSpinner from '../LoadingSpinner';
+import { useEffect, useState } from 'react';
+import { Line } from 'react-chartjs-2';
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend,
+  Filler
+} from 'chart.js';
 
-const GPATrendChart = ({ studentId, riskData }) => {
-  const [loading, setLoading] = useState(true);
-  const [gpaData, setGpaData] = useState([]);
+ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, Filler);
+
+const GPATrendChart = ({ riskData = [], studentData = null }) => {
+  const [chartData, setChartData] = useState({
+    labels: [],
+    datasets: []
+  });
 
   useEffect(() => {
-    processGPAData();
-  }, [riskData]);
-
-  const processGPAData = () => {
-    try {
-      setLoading(true);
-
-      // Filter for assessments that actually have GPA data with meaningful values (ignore < 1.0 to avoid noise)
-      const validData = riskData?.filter(assessment => {
-        let val = assessment.gpa;
-        if (val === undefined || val === null) {
-          if (assessment.examPerformance !== undefined && assessment.examPerformance !== null) {
-            val = (assessment.examPerformance / 100) * 4;
-          }
-        }
-        return val && parseFloat(val) > 1.0;
+    // Handle empty or missing risk data - use mock GPA data
+    if (!riskData || riskData.length === 0) {
+      // Generate mock GPA trend data
+      const currentGPA = studentData?.gpa || 3.20;
+      const mockLabels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'];
+      
+      // Generate realistic GPA variations around current GPA
+      const mockData = mockLabels.map(() => {
+        const variation = (Math.random() - 0.5) * 0.3; // ±0.15 variation
+        const gpa = Math.max(0, Math.min(4.0, currentGPA + variation));
+        return parseFloat(gpa.toFixed(2));
       });
-
-      // If we have valid real data, use it
-      if (validData && validData.length > 0) {
-        const data = validData
-          .slice(0, 6)
-          .reverse()
-          .map((assessment, index) => {
-            let gpaValue = assessment.gpa;
-            if (!gpaValue) {
-              const examPerf = assessment.examPerformance || assessment.exam_performance || 0;
-              gpaValue = (examPerf / 100) * 4;
-            }
-
-            const dateStr = assessment.assessment_date || assessment.created_at;
-            let formattedDate = `Assess ${index + 1}`;
-            try {
-              if (dateStr) {
-                formattedDate = new Date(dateStr).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-              }
-            } catch (e) { /* ignore */ }
-
-            return {
-              date: formattedDate,
-              gpa: parseFloat(gpaValue) || 0
-            };
-          });
-        setGpaData(data);
-      } else {
-        // Fallback: Show a realistic Mock Trend so the user understands the chart
-        // Fallback: Show a realistic Mock Trend per Semester as requested
-        setGpaData([
-          { date: 'Yr 1 Sem 1', gpa: 3.20 },
-          { date: 'Yr 1 Sem 2', gpa: 3.15 },
-          { date: 'Yr 2 Sem 1', gpa: 3.40 },
-          { date: 'Yr 2 Sem 2', gpa: 3.60 },
-          { date: 'Yr 3 Sem 1', gpa: 3.80 }
-        ]);
-      }
-
-      setLoading(false);
-    } catch (error) {
-      console.error('❌ Error processing GPA data:', error);
-      setGpaData([]);
-      setLoading(false);
+      
+      // Ensure last value is current GPA
+      mockData[mockData.length - 1] = currentGPA;
+      
+      setChartData({
+        labels: mockLabels,
+        datasets: [
+          {
+            label: 'GPA Trend',
+            data: mockData,
+            fill: true,
+            backgroundColor: 'rgba(99, 102, 241, 0.1)',
+            borderColor: 'rgba(99, 102, 241, 1)',
+            borderWidth: 3,
+            tension: 0.4,
+            pointRadius: 5,
+            pointHoverRadius: 7,
+            pointBackgroundColor: 'rgba(99, 102, 241, 1)',
+            pointBorderColor: '#fff',
+            pointBorderWidth: 2,
+            pointHoverBackgroundColor: 'rgba(99, 102, 241, 1)',
+            pointHoverBorderColor: '#fff'
+          }
+        ]
+      });
+      return;
     }
-  };
 
-  if (loading) {
-    return <LoadingSpinner />;
+    // Use real risk data to show GPA trend
+    const labels = riskData.map((item) => 
+      new Date(item.calculated_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+    );
+    
+    // If risk data has GPA, use it; otherwise use risk score as proxy
+    const gpaValues = riskData.map((item) => {
+      if (item.gpa !== undefined) return item.gpa;
+      // Convert risk score (0-100) to GPA scale (0-4.0)
+      return ((100 - (item.risk_score || 0)) / 100) * 4.0;
+    });
+
+    setChartData({
+      labels,
+      datasets: [
+        {
+          label: 'GPA Trend',
+          data: gpaValues,
+          fill: true,
+          backgroundColor: 'rgba(99, 102, 241, 0.1)',
+          borderColor: 'rgba(99, 102, 241, 1)',
+          borderWidth: 3,
+          tension: 0.4,
+          pointRadius: 5,
+          pointHoverRadius: 7,
+          pointBackgroundColor: 'rgba(99, 102, 241, 1)',
+          pointBorderColor: '#fff',
+          pointBorderWidth: 2,
+          pointHoverBackgroundColor: 'rgba(99, 102, 241, 1)',
+          pointHoverBorderColor: '#fff'
+        }
+      ]
+    });
+  }, [riskData, studentData]);
+
+  // Don't render if no chart data
+  if (!chartData.labels || chartData.labels.length === 0) {
+    return (
+      <div className="flex items-center justify-center h-64 text-gray-500">
+        <div className="text-center">
+          <p className="text-lg font-semibold">No GPA data available</p>
+          <p className="text-sm mt-2">Submit self-checks to track your academic performance</p>
+        </div>
+      </div>
+    );
   }
 
-  const chartHeight = 250; // Taller chart
-  const maxGPA = 4.0;
-
   return (
-    <div className="chart-container w-full h-[300px] flex flex-col justify-end">
-      {gpaData.length > 0 ? (
-        <div className="flex h-full items-end justify-between gap-4 px-2">
-          {/* Y-Axis Labels (Implicit or Explicit) - Let's do tooltips instead for clean look */}
-
-          {gpaData.map((point, index) => {
-            // Calculate height percentage relative to 4.0
-            const heightPercent = (point.gpa / maxGPA) * 100;
-            // Color gradient based on performance
-            const isHigh = point.gpa >= 3.5;
-            const isMedium = point.gpa >= 3.0 && point.gpa < 3.5;
-
-            return (
-              <div key={index} className="flex-1 flex flex-col items-center group relative h-full justify-end">
-                {/* The Bar */}
-                <div className="w-full bg-gray-50 rounded-t-xl relative overflow-hidden flex items-end transition-all hover:bg-gray-100 h-full">
-                  <div
-                    className={`w-full rounded-t-xl transition-all duration-1000 ease-out relative 
-                                      ${isHigh ? 'bg-gradient-to-t from-green-600 to-green-400' :
-                        isMedium ? 'bg-gradient-to-t from-blue-600 to-blue-400' :
-                          'bg-gradient-to-t from-orange-500 to-orange-400'}
-                                   `}
-                    style={{ height: `${heightPercent}%` }}
-                  >
-                    {/* Value Label on Top of Bar */}
-                    <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs font-bold py-1 px-2 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
-                      GPA: {point.gpa.toFixed(2)}
-                    </div>
-
-                    {/* Always visible value if requested 'magnify' */}
-                    <div className="w-full text-center text-white font-bold text-shadow-sm mt-2 text-sm opacity-90">
-                      {point.gpa.toFixed(2)}
-                    </div>
-                  </div>
-                </div>
-
-                {/* X-Axis Label */}
-                <div className="mt-3 text-xs md:text-sm font-semibold text-gray-500 text-center uppercase tracking-wide">
-                  {point.date}
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      ) : (
-        <div className="flex items-center justify-center h-full text-gray-400">
-          No Data Available
-        </div>
-      )}
+    <div className="h-64">
+      <Line 
+        data={chartData} 
+        options={{ 
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              display: true,
+              position: 'top',
+              labels: {
+                font: {
+                  size: 12,
+                  weight: 'bold'
+                },
+                color: '#374151',
+                usePointStyle: true,
+                padding: 15
+              }
+            },
+            tooltip: {
+              backgroundColor: 'rgba(0, 0, 0, 0.8)',
+              titleColor: '#fff',
+              bodyColor: '#fff',
+              borderColor: 'rgba(99, 102, 241, 1)',
+              borderWidth: 1,
+              padding: 12,
+              displayColors: false,
+              callbacks: {
+                label: function(context) {
+                  return 'GPA: ' + context.parsed.y.toFixed(2);
+                }
+              }
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              max: 4.0,
+              ticks: {
+                stepSize: 0.5,
+                callback: function(value) {
+                  return value.toFixed(1);
+                },
+                font: {
+                  size: 11,
+                  weight: 'bold'
+                },
+                color: '#6B7280'
+              },
+              grid: {
+                color: 'rgba(0, 0, 0, 0.05)',
+                drawBorder: false
+              }
+            },
+            x: {
+              ticks: {
+                font: {
+                  size: 11,
+                  weight: 'bold'
+                },
+                color: '#6B7280'
+              },
+              grid: {
+                display: false,
+                drawBorder: false
+              }
+            }
+          },
+          interaction: {
+            intersect: false,
+            mode: 'index'
+          }
+        }} 
+      />
     </div>
   );
-};
-
-GPATrendChart.propTypes = {
-  studentId: PropTypes.number.isRequired,
-  riskData: PropTypes.array
 };
 
 export default GPATrendChart;

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import api from '../../config/api';
+import studentService from '../../services/student.service';
 
 const StudentProfileTab = () => {
   const [profile, setProfile] = useState(null);
@@ -27,162 +28,60 @@ const StudentProfileTab = () => {
       setLoading(true);
       setError('');
 
-      // Get current logged-in user
-      const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
-      const mockDatabase = JSON.parse(localStorage.getItem('mockDatabase') || '{}');
+      console.log('🔍 Fetching profile from backend API');
       
-      console.log('🔍 Loading profile for user:', currentUser.email);
+      // Call backend API to get profile
+      const response = await studentService.getStudentProfile();
       
-      let userProfile = null;
-      let studentRecord = null;
-
-      // Find user in users table (useres)
-      if (mockDatabase.useres && currentUser.email) {
-        userProfile = mockDatabase.useres.find(u => u.email === currentUser.email);
-        if (userProfile) {
-          console.log('✅ Found user in useres table:', userProfile.email);
-        }
-      }
-
-      // Find student record in students table
-      if (userProfile && mockDatabase.students) {
-        studentRecord = mockDatabase.students.find(s => s.user_id === userProfile.id);
-        if (studentRecord) {
-          console.log('✅ Found student record:', studentRecord.student_id);
-        }
-      }
-
-      // If no user found, create mock user based on current session
-      if (!userProfile && currentUser.email) {
-        userProfile = {
-          id: currentUser.id || Date.now(),
-          email: currentUser.email,
-          first_name: currentUser.firstName || 'Student',
-          last_name: currentUser.lastName || 'User',
-          role: 'student',
-          is_active: true,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        };
+      if (response.status === 'success' && response.data) {
+        const studentData = response.data;
         
-        // Add to mock database
-        mockDatabase.useres = mockDatabase.useres || [];
-        mockDatabase.useres.push(userProfile);
-        console.log('🆕 Created user record for:', userProfile.email);
-      }
-
-      // If no student record, create one
-      if (userProfile && !studentRecord) {
-        // Find an advisor to assign
-        let advisorId = null;
-        if (mockDatabase.useres) {
-          const advisors = mockDatabase.useres.filter(u => u.role === 'advisor');
-          if (advisors.length > 0) {
-            advisorId = advisors[0].id;
-          }
-        }
-
-        studentRecord = {
-          id: Date.now(),
-          user_id: userProfile.id,
-          student_id: `STU${String(userProfile.id).padStart(3, '0')}`,
-          program: 'Computer Science',
-          year: 2,
-          gpa: 3.5,
-          advisor_id: advisorId, // Link to advisor in useres table
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        };
-        
-        // Add to mock database
-        mockDatabase.students = mockDatabase.students || [];
-        mockDatabase.students.push(studentRecord);
-        console.log('🆕 Created student record:', studentRecord.student_id, 'with advisor_id:', advisorId);
-      }
-
-      // Create profile object combining user and student data
-      if (userProfile && studentRecord) {
+        // Transform backend data to frontend format
         const profileData = {
-          id: userProfile.id,
-          firstName: userProfile.first_name,
-          lastName: userProfile.last_name,
-          email: userProfile.email,
-          phone: userProfile.phone || '+1 (555) 123-4567',
-          dateOfBirth: userProfile.date_of_birth || '2000-01-01',
-          address: userProfile.address || 'University Campus',
-          emergencyContact: userProfile.emergency_contact || {
+          id: studentData.user_id,
+          firstName: studentData.full_name?.split(' ')[0] || 'Student',
+          lastName: studentData.full_name?.split(' ').slice(1).join(' ') || 'User',
+          email: studentData.users?.email || '',
+          phone: '+1 (555) 123-4567', // TODO: Add phone to database
+          dateOfBirth: '2000-01-01', // TODO: Add DOB to database
+          address: 'University Campus', // TODO: Add address to database
+          emergencyContact: {
             name: 'Emergency Contact',
             relationship: 'Parent',
             phone: '+1 (555) 987-6543',
             email: 'emergency@email.com'
-          },
-          createdAt: userProfile.created_at,
-          updatedAt: userProfile.updated_at
+          }, // TODO: Add emergency contact to database
+          createdAt: studentData.created_at,
+          updatedAt: studentData.updated_at
         };
 
-        // Find assigned advisor from database using advisor_id
-        let assignedAdvisor = null;
-        if (studentRecord.advisor_id && mockDatabase.useres) {
-          // Find specific advisor by ID
-          assignedAdvisor = mockDatabase.useres.find(u => u.id === studentRecord.advisor_id && u.role === 'advisor');
-          if (assignedAdvisor) {
-            console.log('👨‍🏫 Found assigned advisor by ID:', assignedAdvisor.first_name, assignedAdvisor.last_name);
-          }
-        }
-
-        // Fallback: if no specific advisor assigned, find any advisor
-        if (!assignedAdvisor && mockDatabase.useres) {
-          const advisors = mockDatabase.useres.filter(u => u.role === 'advisor');
-          if (advisors.length > 0) {
-            assignedAdvisor = advisors[0];
-            console.log('� Using fallback advisor:', assignedAdvisor.first_name, assignedAdvisor.last_name);
-          }
-        }
-
-        // If no advisor found, use default
-        if (!assignedAdvisor) {
-          assignedAdvisor = {
-            first_name: 'John',
-            last_name: 'Advisor',
-            email: 'advisor@university.edu',
-            office: 'Tech Building, Room 301'
-          };
-          console.log('⚠️ Using default advisor');
-        }
-
         const academicData = {
-          studentId: studentRecord.student_id,
-          program: studentRecord.program,
-          year: studentRecord.year,
-          gpa: studentRecord.gpa,
-          enrollmentDate: studentRecord.enrollment_date || '2022-09-01',
-          expectedGraduation: studentRecord.expected_graduation || '2025-05-15',
+          studentId: studentData.student_id,
+          program: studentData.department || 'Computer Science',
+          year: studentData.year_of_study || 2,
+          gpa: parseFloat(studentData.gpa) || 0.0,
+          enrollmentDate: '2022-09-01', // TODO: Add to database
+          expectedGraduation: '2025-05-15', // TODO: Add to database
+          currentRiskLevel: studentData.risk_level?.toLowerCase() || 'low',
           advisor: {
-            name: `${assignedAdvisor.first_name} ${assignedAdvisor.last_name}`,
-            email: assignedAdvisor.email,
-            office: assignedAdvisor.office || 'Main Building, Room 101'
+            name: 'Academic Advisor', // TODO: Join with advisor data
+            email: 'advisor@university.edu',
+            office: 'Main Building, Room 101'
           },
           lastAssessment: new Date().toISOString(),
-          attendance: 95
+          attendance: 95 // TODO: Calculate from attendance table
         };
 
         setProfile(profileData);
         setFormData(profileData);
         setStudentData(academicData);
         
-        // Save to mock database
-        localStorage.setItem('mockDatabase', JSON.stringify(mockDatabase));
-        
-        console.log('🎓 Profile loaded successfully:', {
-          user: userProfile.email,
-          studentId: studentRecord.student_id,
-          program: studentRecord.program
-        });
+        console.log('✅ Profile loaded successfully from backend');
       } else {
-        throw new Error('User or student record not found');
+        throw new Error('Invalid response from server');
       }
     } catch (error) {
-      console.error('Error fetching profile data:', error);
+      console.error('❌ Error fetching profile data:', error);
       setError('Failed to load profile data. Please try logging in again.');
     } finally {
       setLoading(false);
@@ -196,95 +95,52 @@ const StudentProfileTab = () => {
     setSuccess('');
 
     try {
-      // Simulate API call with mock data
-      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate network delay
+      console.log('💾 Updating profile via backend API');
       
-      // Simulate real database operation
-      await new Promise(resolve => setTimeout(resolve, 500));
+      // Prepare data for backend API
+      const updateData = {
+        email: formData.email,
+        full_name: `${formData.firstName} ${formData.lastName}`,
+        // Note: phone, dateOfBirth, address, emergencyContact not yet in database schema
+        // TODO: Add these fields to database schema and update here
+      };
       
-      // Get current database
-      const mockDatabase = JSON.parse(localStorage.getItem('mockDatabase') || '{}');
-      const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+      // Call backend API to update profile
+      const response = await studentService.updateStudentProfile(updateData);
       
-      console.log('💾 Updating profile for:', currentUser.email, '→', formData.email);
-      
-      // Update user record in useres table
-      if (mockDatabase.useres) {
-        const userIndex = mockDatabase.useres.findIndex(user => user.email === profile.email);
-        if (userIndex !== -1) {
-          // Update existing user record
-          mockDatabase.useres[userIndex].first_name = formData.firstName;
-          mockDatabase.useres[userIndex].last_name = formData.lastName;
-          mockDatabase.useres[userIndex].email = formData.email;
-          mockDatabase.useres[userIndex].phone = formData.phone;
-          mockDatabase.useres[userIndex].date_of_birth = formData.dateOfBirth;
-          mockDatabase.useres[userIndex].address = formData.address;
-          mockDatabase.useres[userIndex].emergency_contact = formData.emergencyContact;
-          mockDatabase.useres[userIndex].updated_at = new Date().toISOString();
-          console.log('👤 Updated user record in useres table');
-        } else {
-          // Create new user record
-          const newUser = {
-            id: profile.id || Date.now(),
+      if (response.status === 'success') {
+        // Update local state with new data
+        setProfile(formData);
+        
+        // Update localStorage user session if email changed
+        const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+        if (formData.email !== currentUser.email) {
+          const updatedUser = {
+            ...currentUser,
             email: formData.email,
-            first_name: formData.firstName,
-            last_name: formData.lastName,
-            phone: formData.phone,
-            date_of_birth: formData.dateOfBirth,
-            address: formData.address,
-            emergency_contact: formData.emergencyContact,
-            role: 'student',
-            is_active: true,
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
+            firstName: formData.firstName,
+            lastName: formData.lastName
           };
-          mockDatabase.useres.push(newUser);
-          console.log('🆕 Created new user record in useres table');
+          localStorage.setItem('user', JSON.stringify(updatedUser));
+          console.log('🔄 Updated current user session');
         }
-      }
-      
-      // Update student record in students table
-      if (mockDatabase.students) {
-        const studentIndex = mockDatabase.students.findIndex(student => student.user_id === profile.id);
-        if (studentIndex !== -1) {
-          // Student academic data typically doesn't change from profile edit
-          // But we can update any relevant fields here if needed
-          console.log('📚 Student record found in students table');
-        }
-      }
-      
-      // Save updated database
-      localStorage.setItem('mockDatabase', JSON.stringify(mockDatabase));
-      
-      // Update current user session if email changed
-      if (formData.email !== currentUser.email) {
-        const updatedUser = {
-          ...currentUser,
+        
+        setSuccess(`Profile updated successfully! ${formData.email !== profile.email ? 'Email has been updated in the database.' : ''}`);
+        setIsEditing(false);
+        
+        console.log('✅ Profile update complete:', {
           email: formData.email,
-          firstName: formData.firstName,
-          lastName: formData.lastName
-        };
-        localStorage.setItem('user', JSON.stringify(updatedUser));
-        console.log('🔄 Updated current user session');
+          timestamp: new Date().toISOString()
+        });
+        
+        // Refresh profile data from backend
+        await fetchProfileData();
+      } else {
+        throw new Error(response.message || 'Failed to update profile');
       }
-      
-      // Update local state
-      setProfile(formData);
-      setSuccess(`Profile updated successfully! ${formData.email !== profile.email ? 'Email has been updated in the database.' : ''}`);
-      setIsEditing(false);
-      
-      // Update form data for consistency
-      localStorage.setItem('studentProfile', JSON.stringify(formData));
-      
-      console.log('✅ Database update complete:', {
-        studentId: studentData?.studentId,
-        oldEmail: profile.email,
-        newEmail: formData.email,
-        timestamp: new Date().toISOString(),
-        tablesUpdated: ['useres']
-      });
     } catch (error) {
-      setError('Failed to update profile');
+      console.error('❌ Profile update error:', error);
+      setError(error.message || 'Failed to update profile. Please try again.');
     } finally {
       setSaving(false);
     }

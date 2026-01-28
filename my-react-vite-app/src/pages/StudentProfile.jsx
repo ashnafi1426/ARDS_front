@@ -1,11 +1,11 @@
-import PageLayout from '../components/layouts/PageLayout';
+import DashboardLayout from '../components/layouts/DashboardLayout';
 import StudentProfileTab from '../components/student/StudentProfileTab';
 
 const StudentProfile = () => {
   return (
-    <PageLayout title="Profile">
+    <DashboardLayout>
       <StudentProfileTab />
-    </PageLayout>
+    </DashboardLayout>
   );
 };
 

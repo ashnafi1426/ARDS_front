@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { register } from '../services/login.service';
+import authService from '../services/auth.service';
 import LandingHeader from '../components/LandingHeader';
 import '../styles/Auth.css';
 
@@ -9,7 +9,6 @@ const Register = () => {
     email: '',
     password: '',
     fullName: '',
-    studentNumber: '',
     department: '',
     role: 'student'
   });
@@ -30,12 +29,11 @@ const Register = () => {
         email: formData.email,
         password: formData.password,
         full_name: formData.fullName,
-        student_number: formData.studentNumber || null,
         department: formData.department || null,
         role: formData.role || 'student',
       };
 
-      const response = await register(registrationData);
+      const response = await authService.register(registrationData);
 
       if (!response || !response.user || !response.token) {
         console.error('❌ Registration returned invalid response:', response);
@@ -53,17 +51,24 @@ const Register = () => {
         return;
       }
 
-      // Store user and token in localStorage
-      localStorage.setItem('user', JSON.stringify(user));
-      localStorage.setItem('token', token);
+      // Store user and token using auth service
+      authService.storeAuthData(user, token);
 
       console.log('✅ Registration successful, user:', user);
       console.log('👤 User role:', user.role);
-      console.log('🚀 Redirecting to:', user.role === 'admin' ? '/admin/dashboard' : user.role === 'advisor' ? '/advisor/dashboard' : '/student/dashboard');
 
-      // Small delay to ensure state is updated
+      // Direct navigation based on role
+      const redirectPath = user.role === 'admin' 
+        ? '/admin/dashboard' 
+        : user.role === 'advisor' 
+        ? '/advisor/dashboard' 
+        : '/student/dashboard';
+      
+      console.log('🔄 Redirecting to:', redirectPath);
+
+      // Small delay to ensure localStorage is written
       setTimeout(() => {
-        navigate('/redirect', { replace: true });
+        navigate(redirectPath, { replace: true });
       }, 100);
       
     } catch (err) {
@@ -138,19 +143,6 @@ const Register = () => {
                 <option value="admin">Administrator</option>
               </select>
             </div>
-
-            {formData.role === 'student' && (
-              <div className="form-group">
-                <label>Student Number (Optional)</label>
-                <input
-                  type="text"
-                  value={formData.studentNumber}
-                  onChange={(e) => setFormData({ ...formData, studentNumber: e.target.value })}
-                  aria-label="Student number"
-                  placeholder="Enter your student number"
-                />
-              </div>
-            )}
 
             <div className="form-group">
               <label>Department (Optional)</label>

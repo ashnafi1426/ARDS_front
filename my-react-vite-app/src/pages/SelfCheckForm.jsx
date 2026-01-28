@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../hooks/useAuth';
+import studentService from '../services/student.service';
 import api from '../config/api';
 import LoadingSpinner from '../components/LoadingSpinner';
-import PageLayout from '../components/layouts/PageLayout';
+import DashboardLayout from '../components/layouts/DashboardLayout';
 
 const SelfCheckForm = () => {
   const { user } = useAuth();
@@ -100,12 +101,6 @@ const SelfCheckForm = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!studentId) {
-      const errorMsg = 'No student record found. Please contact your administrator.';
-      setError(errorMsg);
-      return;
-    }
-
     if (!formData.confirmAccuracy) {
       setError('Please confirm that the information provided is accurate.');
       return;
@@ -115,67 +110,76 @@ const SelfCheckForm = () => {
     setSuccess(false);
     setError('');
 
-    const mappedFactors = {
-      attendance: formData.attendancePercentage === 'Yes (100%)' ? 100 :
-        formData.attendancePercentage === 'Mostly (75–99%)' ? 85 :
-          formData.attendancePercentage === 'Some (50–74%)' ? 60 : 30,
-      assignmentCompletion: formData.assignmentProgress === 'All completed' ? 100 :
-        formData.assignmentProgress === 'Most completed' ? 75 :
-          formData.assignmentProgress === 'Some completed' ? 50 : 0,
-      examPerformance: formData.factors.examPerformance,
-      participationLevel: formData.timeManagement === 'Very well' ? 5 :
+    // Map the form data to the backend format
+    const selfCheckData = {
+      stress_level: formData.stressLevel === 'Very Low' ? 1 :
+        formData.stressLevel === 'Low' ? 2 :
+          formData.stressLevel === 'Moderate' ? 3 :
+            formData.stressLevel === 'High' ? 4 : 5,
+      workload_difficulty: formData.workloadDifficulty === 'Very Easy' ? 1 :
+        formData.workloadDifficulty === 'Easy' ? 2 :
+          formData.workloadDifficulty === 'Manageable' ? 3 :
+            formData.workloadDifficulty === 'Difficult' ? 4 : 5,
+      sleep_quality: formData.timeManagement === 'Very well' ? 5 :
         formData.timeManagement === 'Well' ? 4 :
           formData.timeManagement === 'Average' ? 3 :
             formData.timeManagement === 'Poor' ? 2 : 1,
-      mentalHealthScore: formData.stressLevel === 'Very Low' ? 2 :
-        formData.stressLevel === 'Low' ? 4 :
-          formData.stressLevel === 'Moderate' ? 6 :
-            formData.stressLevel === 'High' ? 8 : 10,
-      financialStress: formData.factors.financialStress,
-      socialEngagement: formData.factors.socialEngagement
+      study_hours: formData.assignmentProgress === 'All completed' ? 40 :
+        formData.assignmentProgress === 'Most completed' ? 30 :
+          formData.assignmentProgress === 'Some completed' ? 20 : 10,
+      financial_concern: 3, // Default middle value
+      motivation_level: formData.attendancePercentage === 'Yes (100%)' ? 5 :
+        formData.attendancePercentage === 'Mostly (75–99%)' ? 4 :
+          formData.attendancePercentage === 'Some (50–74%)' ? 3 : 2,
+      // NEW: Map attendance to backend format
+      attendance_rate: formData.attendancePercentage === 'Yes (100%)' ? 'YES_100' :
+        formData.attendancePercentage === 'Mostly (75–99%)' ? 'MOSTLY_75_99' :
+          formData.attendancePercentage === 'Some (50–74%)' ? 'SOME_50_74' : 'RARELY_BELOW_50',
+      // NEW: Map assignment progress to backend format
+      assignment_completion: formData.assignmentProgress === 'All completed' ? 'ALL_COMPLETED' :
+        formData.assignmentProgress === 'Most completed' ? 'MOST_COMPLETED' :
+          formData.assignmentProgress === 'Some completed' ? 'SOME_COMPLETED' : 'NONE_COMPLETED',
+      comments: formData.notes || ''
     };
 
+    console.log('🔍 Submitting self-check data:', selfCheckData);
+    console.log('📋 attendance_rate:', selfCheckData.attendance_rate);
+    console.log('📋 assignment_completion:', selfCheckData.assignment_completion);
+
     try {
-      await api.post('/risks', {
-        studentId: studentId,
-        weekNumber: formData.weekNumber,
-        academicYear: formData.academicYear,
-        stressLevel: formData.stressLevel,
-        workloadDifficulty: formData.workloadDifficulty,
-        timeManagement: formData.timeManagement,
-        assignmentProgress: formData.assignmentProgress,
-        attendancePercentage: formData.attendancePercentage,
-        notes: formData.notes,
-        factors: mappedFactors
-      });
+      const response = await studentService.submitSelfCheck(selfCheckData);
 
-      setSuccess(true);
+      if (response.status === 'success') {
+        setSuccess(true);
 
-      setFormData({
-        ...formData,
-        stressLevel: 'Moderate',
-        workloadDifficulty: 'Manageable',
-        timeManagement: 'Average',
-        assignmentProgress: 'Most completed',
-        attendancePercentage: 'Yes (100%)',
-        notes: '',
-        confirmAccuracy: false
-      });
+        // Reset form
+        setFormData({
+          ...formData,
+          stressLevel: 'Moderate',
+          workloadDifficulty: 'Manageable',
+          timeManagement: 'Average',
+          assignmentProgress: 'Most completed',
+          attendancePercentage: 'Yes (100%)',
+          notes: '',
+          confirmAccuracy: false
+        });
 
-      setTimeout(() => setSuccess(false), 5000);
+        // Trigger a custom event to notify dashboard to refresh
+        window.dispatchEvent(new CustomEvent('selfCheckSubmitted', {
+          detail: { 
+            riskData: response.data?.riskData,
+            timestamp: new Date().toISOString()
+          }
+        }));
+
+        setTimeout(() => setSuccess(false), 5000);
+      }
 
     } catch (error) {
       let errorMessage = 'Failed to submit assessment. Please try again.';
 
-      if (error.response?.data?.errors && Array.isArray(error.response.data.errors)) {
-        const validationErrors = error.response.data.errors
-          .map(err => `${err.field}: ${err.message}`)
-          .join(', ');
-        errorMessage = `Validation Error: ${validationErrors}`;
-      } else if (error.response?.data?.message) {
-        errorMessage = error.response.data.message;
-      } else if (error.message === 'Network Error') {
-        errorMessage = 'Network Error: Cannot connect to server.';
+      if (error.message) {
+        errorMessage = error.message;
       }
 
       setError(errorMessage);
@@ -187,7 +191,7 @@ const SelfCheckForm = () => {
   if (initialLoading) return <LoadingSpinner />;
 
   return (
-    <PageLayout title="Self-Check">
+    <DashboardLayout>
       <div className="p-4 lg:p-10 space-y-10">
       <div className="max-w-5xl mx-auto space-y-10">
 
@@ -487,7 +491,7 @@ const SelfCheckForm = () => {
 
             <button
               type="submit"
-              disabled={loading || !studentId || !formData.confirmAccuracy}
+              disabled={loading || !formData.confirmAccuracy}
               className="w-full h-24 bg-blue-600 hover:bg-blue-700 text-white rounded-[32px] font-[900] uppercase text-2xl tracking-[0.5em] shadow-4xl shadow-blue-500/30 transition-all disabled:opacity-20 active:scale-95 flex items-center justify-center gap-8 relative"
             >
               {loading ? <span>Transmitting Payload...</span> : <span>Submit Assessment</span>}
@@ -496,7 +500,7 @@ const SelfCheckForm = () => {
         </form>
       </div>
       </div>
-    </PageLayout>
+    </DashboardLayout>
   );
 };
 

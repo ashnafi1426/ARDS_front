@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { logIn, logOut, register } from '../services/login.service';
+import authService from '../services/auth.service';
 import getAuth from '../utils/auth';
 
 export const useAuth = () => {
@@ -33,15 +33,14 @@ export const useAuth = () => {
       
       console.log('🔐 Sending login request...');
       
-      const response = await logIn({ email, password });
+      const response = await authService.login({ email, password });
       
       if (!response || !response.user || !response.token) {
         throw new Error('Invalid response from server: missing user or token');
       }
       
-      // Store user and token
-      localStorage.setItem('user', JSON.stringify(response.user));
-      localStorage.setItem('token', response.token);
+      // Store user and token using auth service
+      authService.storeAuthData(response.user, response.token);
       
       setUser(response.user);
       console.log('✅ Login successful for user:', response.user.email);
@@ -65,22 +64,21 @@ export const useAuth = () => {
       const registrationData = {
         email: userData.email,
         password: userData.password,
-        first_name: userData.firstName,
-        last_name: userData.lastName,
+        full_name: userData.fullName || `${userData.firstName} ${userData.lastName}`,
+        department: userData.department || null,
         role: userData.role || 'student',
       };
       
       console.log('📝 Sending registration request...');
       
-      const response = await register(registrationData);
+      const response = await authService.register(registrationData);
       
       if (!response || !response.user || !response.token) {
         throw new Error('Invalid response from server: missing user or token');
       }
       
-      // Store user and token
-      localStorage.setItem('user', JSON.stringify(response.user));
-      localStorage.setItem('token', response.token);
+      // Store user and token using auth service
+      authService.storeAuthData(response.user, response.token);
       
       setUser(response.user);
       console.log('✅ Registration successful for user:', response.user.email);
@@ -97,7 +95,7 @@ export const useAuth = () => {
 
   const logout = useCallback(() => {
     console.log('🚪 Logging out user');
-    logOut();
+    authService.logout();
     setUser(null);
     setError(null);
   }, []);

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useLocation, useParams, useNavigate } from 'react-router-dom';
-import api from '../config/api';
+import studentService from '../services/student.service';
 import LoadingSpinner from '../components/LoadingSpinner';
 import StudentLayout from '../components/layouts/StudentLayout';
 
@@ -40,16 +40,16 @@ const StudentPortal = () => {
     const fetchTelemetry = async () => {
         if (!portalData) setLoading(true);
         try {
-            const profileRes = await api.get('/students/profile');
-            if (profileRes.data.status === 'success') {
-                const data = profileRes.data.data;
+            const profileRes = await studentService.getStudentProfile();
+            if (profileRes.status === 'success') {
+                const data = profileRes.data;
                 setPortalData(data);
                 localStorage.setItem('last_student_perf_data', JSON.stringify(data));
             }
 
-            const riskRes = await api.get('/risks/student');
-            if (riskRes.data.status === 'success') {
-                setRiskData(riskRes.data.data || []);
+            const riskRes = await studentService.getStudentRiskHistory();
+            if (riskRes.status === 'success') {
+                setRiskData(riskRes.data || []);
             }
         } catch (err) {
             console.warn('Telemetry partial failure:', err.message);

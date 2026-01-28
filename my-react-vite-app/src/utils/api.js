@@ -50,13 +50,13 @@ export const authAPI = {
 };
 
 export const studentAPI = {
-  getDashboard: () => apiClient.get('/student/dashboard'),
-  getProfile: () => apiClient.get('/student/profile'),
-  updateProfile: (data) => apiClient.put('/student/profile', data),
-  getRiskStatus: () => apiClient.get('/student/risk-status'),
-  submitSelfAssessment: (data) => apiClient.post('/student/self-assessment', data),
-  getNotifications: () => apiClient.get('/student/notifications'),
-  markNotificationAsRead: (id) => apiClient.put(`/student/notifications/${id}/read`),
+  getProfile: () => apiClient.get('/students/profile'),
+  updateProfile: (data) => apiClient.put('/students/profile', data),
+  submitSelfCheck: (data) => apiClient.post('/students/self-check', data),
+  getNotifications: () => apiClient.get('/students/notifications'),
+  getRiskHistory: () => apiClient.get('/students/risk-history'),
+  getCourses: () => apiClient.get('/students/courses'),
+  getAssignments: () => apiClient.get('/students/assignments'),
 };
 
 export const advisorAPI = {

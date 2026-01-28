@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
-import api from '../config/api';
+import studentService from '../services/student.service';
 import LoadingSpinner from '../components/LoadingSpinner';
 import { useAuth } from '../hooks/useAuth';
-import PageLayout from '../components/layouts/PageLayout';
+import DashboardLayout from '../components/layouts/DashboardLayout';
 
 const NotificationsPage = () => {
   const { user } = useAuth();
@@ -19,14 +19,14 @@ const NotificationsPage = () => {
   const fetchNotifications = async () => {
     try {
       setLoading(true);
-      const res = await api.get('/notifications');
+      const res = await studentService.getStudentNotifications();
       let data = [];
-      if (res.data.status === 'success' && res.data.data) {
-        data = res.data.data.notifications || [];
+      if (res.status === 'success' && res.data) {
+        data = res.data.notifications || [];
       } else if (Array.isArray(res.data)) {
         data = res.data;
-      } else if (res.data.notifications) {
-        data = res.data.notifications;
+      } else if (res.notifications) {
+        data = res.notifications;
       }
 
       if (filter === 'unread') {
@@ -66,21 +66,21 @@ const NotificationsPage = () => {
 
   const markAsRead = async (id) => {
     try {
-      await api.patch(`/notifications/${id}/read`);
+      await studentService.markNotificationAsRead(id);
       fetchNotifications();
     } catch (error) { console.error(error); }
   };
 
   const markAllAsRead = async () => {
     try {
-      await api.patch('/notifications/read-all');
+      await studentService.markAllNotificationsAsRead();
       fetchNotifications();
     } catch (error) { console.error(error); }
   };
 
   const deleteNotification = async (id) => {
     try {
-      await api.delete(`/notifications/${id}`);
+      await studentService.deleteNotification(id);
       fetchNotifications();
     } catch (error) { console.error(error); }
   };
@@ -110,7 +110,7 @@ const NotificationsPage = () => {
   if (loading) return <LoadingSpinner />;
 
   return (
-    <PageLayout title="Notifications">
+    <DashboardLayout>
       <div className={`p-4 lg:p-10 space-y-10 bg-white`}>
       <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 relative">
         <div className="absolute -left-10 bottom-0 w-1.5 h-full bg-indigo-600 rounded-full shadow-[0_0_20px_#4f46e5] opacity-50" />
@@ -203,7 +203,7 @@ const NotificationsPage = () => {
         )}
       </div>
       </div>
-    </PageLayout>
+    </DashboardLayout>
   );
 };
 

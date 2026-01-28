@@ -1,7 +1,7 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import ProtectedRoute from './components/ProtectedRoute';
 
-// Pages
+// Public Pages
 import LandingPage from './pages/LandingPage';
 import Login from './pages/Login';
 import Register from './pages/Register';
@@ -12,7 +12,7 @@ import ContactPage from './pages/ContactPage';
 import RoleBasedRedirect from './pages/RoleBasedRedirect';
 
 // Student Pages
-import StudentDashboard from './pages/StudentDashboard';
+import StudentDashboard from './pages/StudentDashboardNew';
 import StudentPortal from './pages/StudentPortal';
 import StudentProfile from './pages/StudentProfile';
 import StudentCalendarPage from './pages/StudentCalendarPage';
@@ -20,18 +20,11 @@ import StudentResourcesPage from './pages/StudentResourcesPage';
 import StudentHelpPage from './pages/StudentHelpPage';
 import SelfCheckForm from './pages/SelfCheckForm';
 import NotificationsPage from './pages/NotificationsPage';
+import StudentCoursesPage from './pages/StudentCoursesPage';
 
-// Advisor Pages
-import AdvisorDashboard from './pages/AdvisorDashboard';
-import AdvisorStudentsPage from './pages/AdvisorStudentsPage';
-import AdvisorInterventionsPage from './pages/AdvisorInterventionsPage';
-import AdvisorReportsPage from './pages/AdvisorReportsPage';
-import AdvisorProfilePage from './pages/AdvisorProfilePage';
-import AdvisorHelpPage from './pages/AdvisorHelpPage';
-
-// Admin Pages
-import AdminDashboard from './pages/AdminDashboard';
-import AdminPanel from './pages/AdminPanel';
+// Admin Routes
+import adminRoutes from './admin/routes/adminRoutes';
+import TestPage from './admin/pages/TestPage';
 
 const App = () => {
   return (
@@ -114,81 +107,20 @@ const App = () => {
             </ProtectedRoute>
           }
         />
-        {/* Advisor Routes */}
         <Route
-          path="/advisor/dashboard"
+          path="/student/courses"
           element={
-            <ProtectedRoute allowedRoles={['advisor']}>
-              <AdvisorDashboard />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/advisor/students"
-          element={
-            <ProtectedRoute allowedRoles={['advisor']}>
-              <AdvisorStudentsPage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/advisor/interventions"
-          element={
-            <ProtectedRoute allowedRoles={['advisor']}>
-              <AdvisorInterventionsPage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/advisor/reports"
-          element={
-            <ProtectedRoute allowedRoles={['advisor']}>
-              <AdvisorReportsPage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/advisor/profile"
-          element={
-            <ProtectedRoute allowedRoles={['advisor']}>
-              <AdvisorProfilePage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/advisor/help"
-          element={
-            <ProtectedRoute allowedRoles={['advisor']}>
-              <AdvisorHelpPage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/advisor/notifications"
-          element={
-            <ProtectedRoute allowedRoles={['advisor']}>
-              <NotificationsPage />
+            <ProtectedRoute allowedRoles={['student']}>
+              <StudentCoursesPage />
             </ProtectedRoute>
           }
         />
 
         {/* Admin Routes */}
-        <Route
-          path="/admin/dashboard"
-          element={
-            <ProtectedRoute allowedRoles={['admin']}>
-              <AdminDashboard />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/admin/panel"
-          element={
-            <ProtectedRoute allowedRoles={['admin']}>
-              <AdminPanel />
-            </ProtectedRoute>
-          }
-        />
+        {adminRoutes}
+
+        {/* Test Route */}
+        <Route path="/admin/test" element={<TestPage />} />
 
         {/* Catch-all - redirect to home */}
         <Route path="*" element={<Navigate to="/" replace />} />

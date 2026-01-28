@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import PageLayout from '../components/layouts/PageLayout';
+import DashboardLayout from '../components/layouts/DashboardLayout';
 
 const StudentResourcesPage = () => {
     const [resources, setResources] = useState([
@@ -105,7 +105,7 @@ const StudentResourcesPage = () => {
     };
 
     return (
-        <PageLayout title="Resources">
+        <DashboardLayout>
             <div className="p-4 lg:p-10 space-y-10 bg-white">
             <div className="max-w-6xl mx-auto space-y-10">
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 relative">
@@ -176,7 +176,7 @@ const StudentResourcesPage = () => {
                 </div>
             </div>
             </div>
-        </PageLayout>
+        </DashboardLayout>
     );
 };
 
