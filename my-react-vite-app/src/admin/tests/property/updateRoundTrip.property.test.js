@@ -45,6 +45,7 @@ describe('Property-Based Tests: Update Round-Trip Consistency', () => {
   beforeEach(() => {
     // Reset all mocks before each test
     vi.clearAllMocks();
+    vi.resetAllMocks();
   });
 
   afterEach(() => {
@@ -80,7 +81,7 @@ describe('Property-Based Tests: Update Round-Trip Consistency', () => {
           });
 
           // Perform update
-          const updateResult = await mockAdminService.updateUser(userId, updateData);
+          await mockAdminService.updateUser(userId, updateData);
           
           // Fetch all users
           const fetchResult = await mockAdminService.getAllUsers();
@@ -96,7 +97,7 @@ describe('Property-Based Tests: Update Round-Trip Consistency', () => {
           expect(fetchedUser.email).toBe(updateData.email);
           expect(fetchedUser.role).toBe(updateData.role);
           expect(fetchedUser.department).toBe(updateData.department);
-          expect(updateResult.user.id).toBe(fetchedUser.id);
+          expect(updatedUser.id).toBe(fetchedUser.id);
         }
       ),
       { numRuns: 100 }
@@ -133,7 +134,7 @@ describe('Property-Based Tests: Update Round-Trip Consistency', () => {
           });
 
           // Perform update
-          const updateResult = await mockAdminService.updateStudent(studentId, updateData);
+          await mockAdminService.updateStudent(studentId, updateData);
           
           // Fetch all students
           const fetchResult = await mockAdminService.getAllStudents();
@@ -187,7 +188,7 @@ describe('Property-Based Tests: Update Round-Trip Consistency', () => {
           });
 
           // Perform update
-          const updateResult = await mockAdminService.updateAdvisor(advisorId, updateData);
+          await mockAdminService.updateAdvisor(advisorId, updateData);
           
           // Fetch all advisors
           const fetchResult = await mockAdminService.getAllAdvisors();
@@ -246,7 +247,7 @@ describe('Property-Based Tests: Update Round-Trip Consistency', () => {
           mockAdminService.getSettings.mockResolvedValue({ settings: updatedSettings });
 
           // Perform update
-          const updateResult = await mockAdminService.updateSettings(settingsData);
+          await mockAdminService.updateSettings(settingsData);
           
           // Fetch settings
           const fetchResult = await mockAdminService.getSettings();
@@ -292,7 +293,7 @@ describe('Property-Based Tests: Update Round-Trip Consistency', () => {
           });
 
           // Perform status update
-          const updateResult = await mockAdminService.markNotificationAsRead(notificationId);
+          await mockAdminService.markNotificationAsRead(notificationId);
           
           // Fetch all notifications
           const fetchResult = await mockAdminService.getAllNotifications();
@@ -346,7 +347,7 @@ describe('Property-Based Tests: Update Round-Trip Consistency', () => {
           });
 
           // Perform update
-          const updateResult = await mockAdminService.updateIssueStatus(issueId, updateData);
+          await mockAdminService.updateIssueStatus(issueId, updateData);
           
           // Fetch all issues
           const fetchResult = await mockAdminService.getAllIssues();
@@ -388,6 +389,10 @@ describe('Property-Based Tests: Update Round-Trip Consistency', () => {
           )
         }),
         async ({ entityId, updates }) => {
+          // Reset mocks for this specific test run
+          vi.clearAllMocks();
+          vi.resetAllMocks();
+          
           // Apply updates sequentially
           let currentState = { id: entityId };
           

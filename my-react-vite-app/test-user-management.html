@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Management Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        button {
+            padding: 10px 15px;
+            margin: 5px;
+            background-color: #667eea;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #5568d3;
+        }
+        .result {
+            margin-top: 10px;
+            padding: 10px;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+            white-space: pre-wrap;
+        }
+        .error {
+            background-color: #ffebee;
+            color: #c62828;
+        }
+        .success {
+            background-color: #e8f5e9;
+            color: #388e3c;
+        }
+    </style>
+</head>
+<body>
+    <h1>User Management API Test</h1>
+    
+    <div class="test-section">
+        <h3>1. Test API Connection</h3>
+        <button onclick="testConnection()">Test Connection</button>
+        <div id="connection-result" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>2. Test Get All Users</h3>
+        <button onclick="testGetUsers()">Get All Users</button>
+        <div id="users-result" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>3. Test Create User</h3>
+        <button onclick="testCreateUser()">Create Test User</button>
+        <div id="create-result" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>4. Test Authentication</h3>
+        <button onclick="testAuth()">Test Login</button>
+        <div id="auth-result" class="result"></div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:5004/api';
+        
+        // Test basic connection
+        async function testConnection() {
+            const resultDiv = document.getElementById('connection-result');
+            try {
+                const response = await fetch(`${API_URL}/health`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (response.ok) {
+                    resultDiv.className = 'result success';
+                    resultDiv.textContent = '✅ API connection successful';
+                } else {
+                    resultDiv.className = 'result error';
+                    resultDiv.textContent = `❌ API connection failed: ${response.status}`;
+                }
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = `❌ Connection error: ${error.message}`;
+            }
+        }
+
+        // Test authentication
+        async function testAuth() {
+            const resultDiv = document.getElementById('auth-result');
+            try {
+                // Try to login with admin credentials
+                const response = await fetch(`${API_URL}/auth/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        email: 'admin@ards.com',
+                        password: 'admin123'
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok && data.token) {
+                    localStorage.setItem('token', data.token);
+                    localStorage.setItem('user', JSON.stringify(data.user));
+                    resultDiv.className = 'result success';
+                    resultDiv.textContent = `✅ Login successful\nUser: ${data.user.email}\nRole: ${data.user.role}`;
+                } else {
+                    resultDiv.className = 'result error';
+                    resultDiv.textContent = `❌ Login failed: ${data.message || 'Unknown error'}`;
+                }
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = `❌ Auth error: ${error.message}`;
+            }
+        }
+
+        // Test get users
+        async function testGetUsers() {
+            const resultDiv = document.getElementById('users-result');
+            try {
+                const token = localStorage.getItem('token');
+                if (!token) {
+                    resultDiv.className = 'result error';
+                    resultDiv.textContent = '❌ No auth token. Please login first.';
+                    return;
+                }
+
+                const response = await fetch(`${API_URL}/admin/users`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    resultDiv.className = 'result success';
+                    resultDiv.textContent = `✅ Users loaded successfully\nCount: ${data.users?.length || 0}\nUsers: ${JSON.stringify(data.users, null, 2)}`;
+                } else {
+                    resultDiv.className = 'result error';
+                    resultDiv.textContent = `❌ Failed to load users: ${data.message || 'Unknown error'}`;
+                }
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = `❌ Get users error: ${error.message}`;
+            }
+        }
+
+        // Test create user
+        async function testCreateUser() {
+            const resultDiv = document.getElementById('create-result');
+            try {
+                const token = localStorage.getItem('token');
+                if (!token) {
+                    resultDiv.className = 'result error';
+                    resultDiv.textContent = '❌ No auth token. Please login first.';
+                    return;
+                }
+
+                const testUser = {
+                    full_name: 'Test User ' + Date.now(),
+                    email: `test${Date.now()}@example.com`,
+                    password: 'password123',
+                    role: 'student',
+                    department: 'Computer Science'
+                };
+
+                const response = await fetch(`${API_URL}/admin/users`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(testUser)
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    resultDiv.className = 'result success';
+                    resultDiv.textContent = `✅ User created successfully\nUser: ${JSON.stringify(data.user, null, 2)}`;
+                } else {
+                    resultDiv.className = 'result error';
+                    resultDiv.textContent = `❌ Failed to create user: ${data.message || 'Unknown error'}`;
+                }
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = `❌ Create user error: ${error.message}`;
+            }
+        }
+
+        // Auto-test connection on load
+        window.onload = function() {
+            testConnection();
+        };
+    </script>
+</body>
+</html>

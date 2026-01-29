@@ -1,43 +1,48 @@
-import { useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../hooks/useAuth';
+import { Spin } from 'antd';
 
 const RoleBasedRedirect = () => {
-  const { user, loading } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (loading) return;
+    // Read stored role
+    const userRole = localStorage.getItem('role'); // Changed from userRole to role
+    const token = localStorage.getItem('token');
 
-    let currentUser = user;
-    if (!currentUser) {
-      try {
-        const storedUser = localStorage.getItem('user');
-        if (storedUser) {
-          currentUser = JSON.parse(storedUser);
-        }
-      } catch (_) {
-      }
-    }
-
-    if (!currentUser || !currentUser.role) {
+    if (!token) {
+      // No token, redirect to login
       navigate('/login', { replace: true });
       return;
     }
 
-    const redirectPath =
-      currentUser.role === 'admin'
-        ? '/admin/dashboard'
-        : currentUser.role === 'advisor'
-          ? '/advisor/dashboard'
-          : '/student/dashboard';
-
-    navigate(redirectPath, { replace: true });
-  }, [loading, user, navigate]);
+    // Redirect based on role
+    switch (userRole) {
+      case 'student':
+        navigate('/student/dashboard', { replace: true });
+        break;
+      case 'advisor':
+        navigate('/advisor/dashboard', { replace: true });
+        break;
+      case 'admin':
+        navigate('/admin/dashboard', { replace: true });
+        break;
+      default:
+        // Unknown role, redirect to login
+        navigate('/login', { replace: true });
+    }
+  }, [navigate]);
 
   return (
-    <div className="flex items-center justify-center min-h-screen text-xl text-gray-600">
-      Redirecting...
+    <div style={{
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center',
+      height: '100vh',
+      flexDirection: 'column'
+    }}>
+      <Spin size="large" />
+      <p style={{ marginTop: 16, color: '#666' }}>Redirecting to your dashboard...</p>
     </div>
   );
 };

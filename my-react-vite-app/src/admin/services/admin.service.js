@@ -56,6 +56,46 @@ export const resetUserPassword = async (userId) => {
   }
 };
 
+export const getUserActivityLogs = async (userId) => {
+  try {
+    const response = await api.get(`/admin/users/${userId}/activity-logs`);
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching user activity logs:', error);
+    throw error;
+  }
+};
+
+export const toggleUserStatus = async (userId, status) => {
+  try {
+    const response = await api.put(`/admin/users/${userId}/status`, { status });
+    return response.data;
+  } catch (error) {
+    console.error('Error toggling user status:', error);
+    throw error;
+  }
+};
+
+export const bulkDeleteUsers = async (userIds) => {
+  try {
+    const response = await api.post('/admin/users/bulk-delete', { userIds });
+    return response.data;
+  } catch (error) {
+    console.error('Error bulk deleting users:', error);
+    throw error;
+  }
+};
+
+export const bulkUpdateRole = async (userIds, role) => {
+  try {
+    const response = await api.post('/admin/users/bulk-update-role', { userIds, role });
+    return response.data;
+  } catch (error) {
+    console.error('Error bulk updating user roles:', error);
+    throw error;
+  }
+};
+
 // ============ STUDENT MANAGEMENT ============
 
 export const getAllStudents = async () => {
@@ -570,6 +610,10 @@ export default {
   updateUser,
   deleteUser,
   resetUserPassword,
+  getUserActivityLogs,
+  toggleUserStatus,
+  bulkDeleteUsers,
+  bulkUpdateRole,
   
   // Students
   getAllStudents,
